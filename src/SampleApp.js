@@ -1,19 +1,25 @@
 import "./SampleApp.css";
 import { useEffect, useState } from "react";
-import {doDetailsExist} from './Helpers'
+import { doDetailsExist } from "./Helpers";
 import { useAsyncDataFetchChunk } from "./Hooks/index.js";
 import { getRandomIdsEndpoint, getDetailsEndpoint } from "./Requests";
 
+// This sample app will fetch from a mockDB a list of random ids;
+// once the list of random ids is received;
+// it will be used as param to fetch the details
+// the useAsyncDataFetchChunk hook will assist with updating the RenderItems
+// with the correct state and details
 
 function App() {
   const [flatListData, setFlatListData] = useState([]);
   const [detailsToFetch, setDetailsToFetch] = useState([]);
   const [details, setDetails] = useState(new Map());
-  const { resolvedData, loadingData, doneFetching } = useAsyncDataFetchChunk({
-    detailsToFetch,
-    endpoint: getDetailsEndpoint,
-    keyExtractor: "id",
-  });
+  const { resolvedData, loadingData, errorData, doneFetching } =
+    useAsyncDataFetchChunk({
+      detailsToFetch,
+      endpoint: getDetailsEndpoint,
+      keyExtractor: "id",
+    });
 
   const handleGetDetails = (limit) => {
     getRandomIdsEndpoint(limit).then((ids) => {
@@ -35,7 +41,14 @@ function App() {
     setDetails(resolvedData);
   }, [resolvedData]);
 
-  const RenderItem = ({ item, isLoading }) => {
+  const RenderItem = ({ item, isLoading, errorLoading }) => {
+    if (errorLoading) {
+      return (
+        <div style={{ backgroundColor: "red" }}>
+          <p>Error Fetching</p>
+        </div>
+      );
+    }
     if (isLoading) {
       return (
         <div style={{ backgroundColor: "yellow" }}>
@@ -55,6 +68,7 @@ function App() {
           key={item.id + i.toString()}
           item={item}
           isLoading={loadingData.has(item.id)}
+          errorLoading={errorData.has(item.id)}
         />
       ))}
       <div style={{ alignItems: "center" }}>
@@ -62,7 +76,7 @@ function App() {
           style={{ width: 100, backgroundColor: "lightblue" }}
           onClick={() => {
             // get more
-            handleGetDetails(10)
+            handleGetDetails(10);
             console.log("fetching more");
           }}
         >
