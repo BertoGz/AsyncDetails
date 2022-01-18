@@ -26,7 +26,7 @@ export const useAsyncDataFetchChunk = ({
    * 4) return the resolved data
    */
 
-  //  
+  //
   useLayoutEffect(() => {
     if (detailsToFetch?.length) {
       const mappedIds = new Map(initVals);
@@ -67,12 +67,10 @@ export const useAsyncDataFetchChunk = ({
       Array.from(dataToNotLoad, ([name, value]) => name).map((item) =>
         changes.delete(item)
       );
-
       setLoadingData(changes);
       setDataToNotLoad(null);
     }
   }, [dataToNotLoad]);
-
 
   // listener for error data, we push to errorData state
   useLayoutEffect(() => {
@@ -85,7 +83,9 @@ export const useAsyncDataFetchChunk = ({
   // listener for resolved data, we push to resolvedData
   useLayoutEffect(() => {
     if (dataAsResolved) {
-      setResolvedData(new Map([...resolvedData, ...dataAsResolved]));
+      const resData = new Map([...resolvedData, ...dataAsResolved]);
+      setResolvedData(resData);
+      console.log("data fetched", resData);
       setDataAsResolved(null);
     }
   }, [dataAsResolved]);

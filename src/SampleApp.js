@@ -20,12 +20,10 @@ function App() {
       doDetailsExist(ids, details).then((payload) => {
         // append new payload to flatlistData,
         setFlatListData([...flatListData, ...ids]);
-        console.log("fetching more", payload);
         setDetailsToFetch(payload);
       });
     });
   };
-  console.log("flatlistData", flatListData);
   // initial call
   useEffect(() => {
     handleGetDetails(10);
@@ -64,7 +62,8 @@ function App() {
           style={{ width: 100, backgroundColor: "lightblue" }}
           onClick={() => {
             // get more
-            handleGetDetails(10);
+            handleGetDetails(10)
+            console.log("fetching more");
           }}
         >
           <h4>load more</h4>
