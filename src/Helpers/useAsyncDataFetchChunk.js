@@ -1,7 +1,13 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 
-export const useAsyncDataFetchChunk = ({ oGpayload, endpoint }) => {
-  const initVals = new Map(oGpayload.map((item) => [item.label, true]));
+export const useAsyncDataFetchChunk = ({
+  detailsToFetch,
+  keyExtractor,
+  endpoint,
+}) => {
+  const initVals = new Map(
+    detailsToFetch.map((item) => [item[keyExtractor], true])
+  );
   const [resolvedData, setResolvedData] = useState(new Map());
   const [loadingData, setLoadingData] = useState(new Map());
   const [errorData, setErrorData] = useState(new Map());
@@ -9,41 +15,42 @@ export const useAsyncDataFetchChunk = ({ oGpayload, endpoint }) => {
 
   const [dataToLoad, setDataToLoad] = useState(null);
   const [dataToNotLoad, setDataToNotLoad] = useState(null);
-  
+  const [dataAsError, setDataAsError] = useState(null);
+  const [dataAsResolved, setDataAsResolved] = useState(null);
   /**
    * @description
-   * everytime this hook receives a payload (oGpayload)
+   * everytime this hook receives a payload (detailsToFetch)
    * 1) convert the payload to a map
    * 2) set a state of the items we want to put in a loading state;
    * 2) call the endpoint to fetch the data;
    * 3) once it resolves, we remove the loading items
    */
   useLayoutEffect(() => {
-    if (oGpayload?.length) {
+    if (detailsToFetch?.length) {
       const mappedPayload = new Map(initVals);
       setDataToLoad(mappedPayload);
-      console.log("items fetching", oGpayload);
+      console.log("items fetching", detailsToFetch);
       setDoneFetching(false);
 
       new Promise((res, rej) => {
-        endpoint()
-          .then(() => {
+        endpoint(detailsToFetch)
+          .then((payload) => {
+            setDataAsResolved(
+              new Map(payload.map((item) => [item[keyExtractor], item]))
+            );
             setDataToNotLoad(mappedPayload);
             res();
           })
           .catch(() => {
-            const updatedMap = new Map([
-              oGpayload.map((item) => [item.label, true]),
-              ...errorData,
-            ]);
-            setErrorData(updatedMap);
-            setDoneFetching(true);
+            setDataAsError(mappedPayload);
+            setDataToNotLoad(mappedPayload);
             rej();
           });
       });
     }
-  }, [oGpayload]);
+  }, [detailsToFetch]);
 
+  // listener for loading data, we add the key from the loading state.
   useLayoutEffect(() => {
     if (dataToLoad) {
       setLoadingData(new Map([...loadingData, ...dataToLoad]));
@@ -51,6 +58,7 @@ export const useAsyncDataFetchChunk = ({ oGpayload, endpoint }) => {
     }
   }, [dataToLoad]);
 
+  // listener for resolved data, we remove the key from the loading state.
   useLayoutEffect(() => {
     if (dataToNotLoad) {
       const changes = new Map(loadingData);
@@ -63,6 +71,25 @@ export const useAsyncDataFetchChunk = ({ oGpayload, endpoint }) => {
     }
   }, [dataToNotLoad]);
 
+  // listener for when loadingData is 0 we set doneFetching to true
+
+  // listener for error data, we push to errorData state
+  useLayoutEffect(() => {
+    if (dataAsError) {
+      setErrorData(new Map([...errorData, ...dataAsError]));
+      setDataAsError(null);
+    }
+  }, [dataAsError]);
+
+  // listener for error data, we push to errorData state
+  useLayoutEffect(() => {
+    if (dataAsResolved) {
+      setResolvedData(new Map([...resolvedData, ...dataAsResolved]));
+      setDataAsResolved(null);
+    }
+  }, [dataAsResolved]);
+
+  // listener for when loadingData is 0 we set doneFetching to true
   useEffect(() => {
     if (loadingData.size === 0) {
       setDoneFetching(true);
