@@ -76,6 +76,7 @@ export const useAsyncDataFetchChunk = ({
   useLayoutEffect(() => {
     if (dataAsError) {
       setErrorData(new Map([...errorData, ...dataAsError]));
+      console.log('data fetch Errors')
       setDataAsError(null);
     }
   }, [dataAsError]);
