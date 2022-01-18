@@ -1,30 +1,24 @@
 import "./SampleApp.css";
 import { useEffect, useState } from "react";
-import { useAsyncDataFetchChunk } from "./Helpers";
-import { primaryDB } from "./MockDB";
-import { getDetailsEndpoint } from "./Requests";
-const getRandomIds = (limit) => {
-  const length = primaryDB.length;
-  let vals = [];
-  for (let i = 0; i < limit; i++) {
-    const rand = Math.floor(Math.random() * length);
-    vals.push(primaryDB[rand]);
-  }
-  return vals;
-};
-const getDetails = async (ids, details) => {
+import { useAsyncDataFetchChunk } from "./Hooks.js";
+import { getRandomIdsEndpoint, getDetailsEndpoint } from "./Requests";
+
+// checks if details exist in the front end using ids as primary key
+// if detail does not exist we return the missing details
+// if details DO exist we return the ids;
+const doDetailsExist = async (ids, details) => {
   const response = () => {
     return new Promise((res, rej) => {
-      let missingData = [];
+      let missingDetails = [];
       let data = [];
       ids.map((item) => {
         const found = details.has(item.id);
         if (!found) {
-          missingData.push(item);
+          missingDetails.push(item);
         }
         data.push(item.id, item);
       });
-      res({ data, missingData });
+      res({ data, missingDetails });
     });
   };
   return response();
@@ -39,9 +33,20 @@ function App() {
     keyExtractor: "id",
   });
 
-  // initial list of ids to use
+  const handleGetDetails = (limit) => {
+    getRandomIdsEndpoint(limit).then((ids) => {
+      doDetailsExist(ids, details).then((payload) => {
+        // append new payload to flatlistData,
+        setFlatListData([...flatListData, ...payload.data]);
+        console.log("fetching more", payload.missingDetails);
+        setDetailsToFetch(payload.missingDetails);
+      });
+    });
+  };
+  console.log("flatlistData", flatListData);
+  // initial call
   useEffect(() => {
-    handleGetMoreDetails();
+    handleGetDetails(10);
   }, []);
 
   // as we get resolved data (details)
@@ -49,15 +54,6 @@ function App() {
   useEffect(() => {
     setDetails(resolvedData);
   }, [resolvedData]);
-
-  const handleGetMoreDetails = () => {
-    getDetails(getRandomIds(10), details).then((payload) => {
-      // append new payload to flatlistData,
-      setFlatListData([...flatListData, ...payload.data]);
-      console.log("fetching more", payload.missingData);
-      setDetailsToFetch(payload.missingData);
-    });
-  };
 
   const RenderItem = ({ item, isLoading }) => {
     if (isLoading) {
@@ -85,8 +81,8 @@ function App() {
         <div
           style={{ width: 100, backgroundColor: "lightblue" }}
           onClick={() => {
-            // get more, find any missing data to fetch;
-            handleGetMoreDetails();
+            // get more
+            handleGetDetails(10);
           }}
         >
           <h4>load more</h4>
