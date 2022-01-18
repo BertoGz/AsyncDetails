@@ -19,16 +19,18 @@ export const useAsyncDataFetchChunk = ({
   const [dataAsResolved, setDataAsResolved] = useState(null);
   /**
    * @description
-   * everytime this hook receives a payload (detailsToFetch)
+   * this hook receives a payload of ids (detailsToFetch)
    * 1) convert the payload to a map
-   * 2) set a state of the items we want to put in a loading state;
-   * 2) call the endpoint to fetch the data;
+   * 2)  call the endpoint to fetch the data; set a state of the items in a loading state;
    * 3) once it resolves, we remove the loading items
+   * 4) return the resolved data
    */
+
+  //  
   useLayoutEffect(() => {
     if (detailsToFetch?.length) {
-      const mappedPayload = new Map(initVals);
-      setDataToLoad(mappedPayload);
+      const mappedIds = new Map(initVals);
+      setDataToLoad(mappedIds);
       console.log("items fetching", detailsToFetch);
       setDoneFetching(false);
 
@@ -38,19 +40,19 @@ export const useAsyncDataFetchChunk = ({
             setDataAsResolved(
               new Map(payload.map((item) => [item[keyExtractor], item]))
             );
-            setDataToNotLoad(mappedPayload);
+            setDataToNotLoad(mappedIds);
             res();
           })
           .catch(() => {
-            setDataAsError(mappedPayload);
-            setDataToNotLoad(mappedPayload);
+            setDataAsError(mappedIds);
+            setDataToNotLoad(mappedIds);
             rej();
           });
       });
     }
   }, [detailsToFetch]);
 
-  // listener for loading data, we add the key from the loading state.
+  // listener for loading data, we append keys.
   useLayoutEffect(() => {
     if (dataToLoad) {
       setLoadingData(new Map([...loadingData, ...dataToLoad]));
@@ -58,7 +60,7 @@ export const useAsyncDataFetchChunk = ({
     }
   }, [dataToLoad]);
 
-  // listener for resolved data, we remove the key from the loading state.
+  // listener for resolved data, we remove keys from the loading state.
   useLayoutEffect(() => {
     if (dataToNotLoad) {
       const changes = new Map(loadingData);
@@ -71,7 +73,6 @@ export const useAsyncDataFetchChunk = ({
     }
   }, [dataToNotLoad]);
 
-  // listener for when loadingData is 0 we set doneFetching to true
 
   // listener for error data, we push to errorData state
   useLayoutEffect(() => {
@@ -81,7 +82,7 @@ export const useAsyncDataFetchChunk = ({
     }
   }, [dataAsError]);
 
-  // listener for error data, we push to errorData state
+  // listener for resolved data, we push to resolvedData
   useLayoutEffect(() => {
     if (dataAsResolved) {
       setResolvedData(new Map([...resolvedData, ...dataAsResolved]));
@@ -89,7 +90,7 @@ export const useAsyncDataFetchChunk = ({
     }
   }, [dataAsResolved]);
 
-  // listener for when loadingData is 0 we set doneFetching to true
+  // when loadingData size 0 we set doneFetching to true
   useEffect(() => {
     if (loadingData.size === 0) {
       setDoneFetching(true);
