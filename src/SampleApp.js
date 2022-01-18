@@ -15,7 +15,7 @@ function App() {
   const [detailsToFetch, setDetailsToFetch] = useState([]);
   const [details, setDetails] = useState(new Map());
   const { resolvedData, loadingData, errorData, doneFetching } =
-    useAsyncDataFetch({
+    useAsyncDataFetchChunk({
       detailsToFetch,
       endpoint: getDetailsEndpoint,
       keyExtractor: "id",
