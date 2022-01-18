@@ -1,4 +1,4 @@
-import "./App.css";
+import "./SampleApp.css";
 import { useEffect, useState } from "react";
 import { useAsyncDataFetchChunk } from "./Helpers";
 import { primaryDB } from "./MockDB";
