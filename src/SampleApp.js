@@ -1,26 +1,10 @@
 import "./SampleApp.css";
 import { useEffect, useState } from "react";
-import { useAsyncDataFetchChunk } from "./Hooks.js";
+import {doDetailsExist} from './Helpers'
+import { useAsyncDataFetchChunk } from "./Hooks/index.js";
 import { getRandomIdsEndpoint, getDetailsEndpoint } from "./Requests";
 
-// checks if details exist in the front end using ids as primary key
-// if detail does not exist we return the missing details
 
-const doDetailsExist = async (ids, details) => {
-  const response = () => {
-    return new Promise((res, rej) => {
-      let missingDetails = [];
-      ids.map((item) => {
-        const found = details.has(item.id);
-        if (!found) {
-          missingDetails.push(item);
-        }
-      });
-      res(missingDetails);
-    });
-  };
-  return response();
-};
 function App() {
   const [flatListData, setFlatListData] = useState([]);
   const [detailsToFetch, setDetailsToFetch] = useState([]);
