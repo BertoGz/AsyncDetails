@@ -5,20 +5,18 @@ import { getRandomIdsEndpoint, getDetailsEndpoint } from "./Requests";
 
 // checks if details exist in the front end using ids as primary key
 // if detail does not exist we return the missing details
-// if details DO exist we return the ids;
+
 const doDetailsExist = async (ids, details) => {
   const response = () => {
     return new Promise((res, rej) => {
       let missingDetails = [];
-      let data = [];
       ids.map((item) => {
         const found = details.has(item.id);
         if (!found) {
           missingDetails.push(item);
         }
-        data.push(item.id, item);
       });
-      res({ data, missingDetails });
+      res(missingDetails);
     });
   };
   return response();
@@ -37,9 +35,9 @@ function App() {
     getRandomIdsEndpoint(limit).then((ids) => {
       doDetailsExist(ids, details).then((payload) => {
         // append new payload to flatlistData,
-        setFlatListData([...flatListData, ...payload.data]);
-        console.log("fetching more", payload.missingDetails);
-        setDetailsToFetch(payload.missingDetails);
+        setFlatListData([...flatListData, ...ids]);
+        console.log("fetching more", payload);
+        setDetailsToFetch(payload);
       });
     });
   };
