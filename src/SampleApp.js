@@ -1,7 +1,7 @@
 import "./SampleApp.css";
 import { useEffect, useState } from "react";
 import { doDetailsExist } from "./Helpers";
-import { useAsyncDataFetchChunk } from "./Hooks/index.js";
+import {useAsyncDataFetch, useAsyncDataFetchChunk } from "./Hooks/index.js";
 import { getRandomIdsEndpoint, getDetailsEndpoint } from "./Requests";
 import {RenderItem} from './Components'
 // This sample app will fetch from a mockDB a list of random ids;
@@ -15,7 +15,7 @@ function App() {
   const [detailsToFetch, setDetailsToFetch] = useState([]);
   const [details, setDetails] = useState(new Map());
   const { resolvedData, loadingData, errorData, doneFetching } =
-    useAsyncDataFetchChunk({
+    useAsyncDataFetch({
       detailsToFetch,
       endpoint: getDetailsEndpoint,
       keyExtractor: "id",
@@ -44,7 +44,7 @@ function App() {
 
   return (
     <div className="App">
-      <h1>Async Render</h1>
+      <h1>AsyncDetails</h1>
       {flatListData.map((item, i) => (
         <RenderItem
           key={item.id + i.toString()}
