@@ -1,5 +1,7 @@
+
+
 export const primaryDB = [
-  { id: 1, label: "El Gord #4" },
+  { id: 1, label: "El Gordo #4" },
   { id: 2, label: "El trompudo" },
   { id: 3, label: "Aguacates Hamburgers" },
   { id: 4, label: "Los Gallos" },
@@ -20,8 +22,8 @@ export const primaryDB = [
   { id: 17, label: "Taco Bell" },
   { id: 18, label: "In-N-Out" },
   { id: 19, label: "Wingstop" },
-  
 ];
+
 export const detailsDB = [
   { id: 1, name: "El Gord #4" ,worth: "60b", locations: 100 },
   { id: 2, name: "El trompudo" ,worth: "80b", locations: 4 },
