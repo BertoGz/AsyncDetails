@@ -5,8 +5,15 @@ export const useAsyncDataFetchChunk = ({
   keyExtractor,
   endpoint,
 }) => {
-  const initVals = new Map(
-    detailsToFetch.map((item) => [item[keyExtractor], true])
+  const mappedKeys = new Map(
+    detailsToFetch.map((item) => {
+      let o = new Object();
+      keyExtractor.forEach((x, i) => {
+        o[keyExtractor[i]] = item[keyExtractor[i]];
+      });
+
+      return [JSON.stringify(o), true];
+    })
   );
   const [resolvedData, setResolvedData] = useState(new Map());
   const [loadingData, setLoadingData] = useState(new Map());
@@ -29,8 +36,7 @@ export const useAsyncDataFetchChunk = ({
   //
   useLayoutEffect(() => {
     if (detailsToFetch?.length) {
-      const mappedIds = new Map(initVals);
-      setDataToLoad(mappedIds);
+      setDataToLoad(mappedKeys);
       console.log("items fetching", detailsToFetch);
       setDoneFetching(false);
 
@@ -38,14 +44,24 @@ export const useAsyncDataFetchChunk = ({
         endpoint(detailsToFetch)
           .then((payload) => {
             setDataAsResolved(
-              new Map(payload.map((item) => [item[keyExtractor], item]))
+              //['id','dependent_id']
+              new Map(
+                payload.map((item) => {
+                  let o = new Object();
+                  keyExtractor.forEach((x, i) => {
+                    o[keyExtractor[i]] = item[keyExtractor[i]];
+                  });
+                  return [JSON.stringify(o), item];
+                })
+              )
             );
-            setDataToNotLoad(mappedIds);
+
+            setDataToNotLoad(mappedKeys);
             res();
           })
           .catch(() => {
-            setDataAsError(mappedIds);
-            setDataToNotLoad(mappedIds);
+            setDataAsError(mappedKeys);
+            setDataToNotLoad(mappedKeys);
             rej();
           });
       });
@@ -76,7 +92,7 @@ export const useAsyncDataFetchChunk = ({
   useLayoutEffect(() => {
     if (dataAsError) {
       setErrorData(new Map([...errorData, ...dataAsError]));
-      console.log('data fetch Errors')
+      console.log("data fetch Errors");
       setDataAsError(null);
     }
   }, [dataAsError]);
